@@ -1,0 +1,50 @@
+[project]
+name = "plumb-link"
+version = "0.1.0"
+description = "AI技能落地规范架构：嵌入式软件工程思维的大模型工具SDK"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Plumb-Link Team"}
+]
+
+dependencies = [
+    "pyyaml>=6.0",
+    "jsonschema>=4.0",
+    "colorama>=0.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "flake8>=6.0",
+    "mypy>=1.0",
+]
+
+[project.scripts]
+skill-init = "framework.src.skill_init:main"
+skill-lint = "framework.src.skill_lint:main"
+skill-test = "framework.src.skill_test:main"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
