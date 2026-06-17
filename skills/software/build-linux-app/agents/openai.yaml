@@ -1,0 +1,50 @@
+# build-linux-app 大模型接口配置
+
+interface:
+  display_name: "Linux 应用构建"
+  short_description: "配置、编译 Linux 应用工程，支持 ARM64 交叉编译（如 RK3562）。"
+  default_prompt: |
+    使用 build-linux-app 技能：
+    1. 自动探测工程配置（CMakeLists.txt / Makefile）
+    2. 检测目标架构（x86_64 / arm64）
+    3. 如果是 ARM64 目标，自动配置交叉编译工具链
+    4. 执行 cmake configure + build 或 make
+    5. 扫描并报告构建产物
+    6. 更新 Project Profile 中的构建信息
+
+intent_keywords:
+  - "编译"
+  - "构建"
+  - "build"
+  - "compile"
+  - "交叉编译"
+  - "arm64"
+  - "cmake"
+  - "makefile"
+
+file_patterns:
+  - "CMakeLists.txt"
+  - "Makefile"
+  - "CMakePresets.json"
+
+platforms:
+  - linux
+  - windows
+  - wsl
+
+required_tools:
+  - cmake
+  - make
+  - gcc
+  - g++
+
+optional_tools:
+  - ninja
+  - aarch64-none-linux-gnu-gcc  # ARM64 交叉编译
+
+handoff:
+  on_success:
+    - debug-linux-app    # 下一步需要调试
+  on_failure:
+    - tool-missing: env-setup
+    - compilation-error: static-analysis

@@ -1,0 +1,263 @@
+# Plumb-Link 技能注册表
+
+本文件定义了 plumb-link 仓库中所有技能的元数据，供大模型查询和调用技能。
+
+---
+
+skills:
+  # ── 软件技能 ───────────────────────────────────────────────────────────────
+  - name: build-linux-app
+    category: software
+    version: 1.0.0
+    description: "编译 Linux 应用程序，支持 x86_64 本地编译和 ARM64 交叉编译"
+    keywords:
+      - "编译"
+      - "build"
+      - "make"
+      - "cmake"
+      - "构建"
+      - "交叉编译"
+      - "arm64"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+      - build_utils
+    platforms:
+      - linux
+      - windows
+      - macos
+    required_tools:
+      - gcc
+      - make
+    optional_tools:
+      - cmake
+      - ninja
+      - aarch64-linux-gnu-gcc
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "stable"
+
+  # ── 硬件技能 ───────────────────────────────────────────────────────────────
+  - name: gpio-config
+    category: hardware
+    version: 1.0.0
+    description: "GPIO 引脚配置和管理"
+    keywords:
+      - "gpio"
+      - "引脚"
+      - "配置"
+      - "导出"
+      - "设置"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+    platforms:
+      - linux
+      - baremetal
+    required_tools:
+      - /sys/class/gpio
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "design"
+
+  - name: i2c-scan
+    category: hardware
+    version: 1.0.0
+    description: "I2C 总线设备扫描"
+    keywords:
+      - "i2c"
+      - "scan"
+      - "扫描"
+      - "总线"
+      - "设备"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+    platforms:
+      - linux
+      - baremetal
+    required_tools:
+      - i2cdetect
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "design"
+
+  - name: spi-debug
+    category: hardware
+    version: 1.0.0
+    description: "SPI 设备调试和测试"
+    keywords:
+      - "spi"
+      - "debug"
+      - "调试"
+      - "设备列表"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+    platforms:
+      - linux
+      - baremetal
+    required_tools:
+      - spidev_test
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "design"
+
+  # ── 平台技能 ───────────────────────────────────────────────────────────────
+  - name: freertos-config
+    category: platform
+    version: 1.0.0
+    description: "FreeRTOS 配置文件生成"
+    keywords:
+      - "freertos"
+      - "config"
+      - "配置"
+      - "rtos"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+    platforms:
+      - rtos
+    required_tools:
+      - freertos
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "design"
+
+  - name: linux-build
+    category: platform
+    version: 1.0.0
+    description: "Linux 内核构建和编译"
+    keywords:
+      - "linux"
+      - "build"
+      - "构建"
+      - "编译内核"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+      - build_utils
+    platforms:
+      - linux
+    required_tools:
+      - gcc
+      - make
+      - bison
+      - flex
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "design"
+
+  # ── 工作流技能 ─────────────────────────────────────────────────────────────
+  - name: project-init
+    category: workflow
+    version: 1.0.0
+    description: "嵌入式项目初始化和模板生成"
+    keywords:
+      - "init"
+      - "项目"
+      - "初始化"
+      - "创建工程"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+    platforms:
+      - cross-platform
+    required_tools:
+      - git
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "design"
+
+  - name: deploy-release
+    category: workflow
+    version: 1.0.0
+    description: "应用部署和发布管理"
+    keywords:
+      - "deploy"
+      - "release"
+      - "部署"
+      - "发布"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+    platforms:
+      - cross-platform
+    required_tools:
+      - scp
+      - ssh
+    author: "Plumb-Link Team"
+    license: "MIT"
+    status: "design"
+
+---
+
+# 共享依赖定义
+
+shared_dependencies:
+  tool_config:
+    description: "工具路径配置管理"
+    path: "shared/tool_config.py"
+    version: "1.0.0"
+
+  build_utils:
+    description: "构建工具函数集合"
+    path: "shared/build_utils.py"
+    version: "1.0.0"
+
+---
+
+# 技能分类定义
+
+categories:
+  software:
+    name: "软件技能"
+    description: "应用程序构建、编译、调试等软件相关技能"
+    icon: "code"
+
+  hardware:
+    name: "硬件技能"
+    description: "GPIO、I2C、SPI 等硬件接口操作技能"
+    icon: "chip"
+
+  platform:
+    name: "平台技能"
+    description: "特定平台的构建和配置技能"
+    icon: "layers"
+
+  workflow:
+    name: "工作流技能"
+    description: "项目初始化、部署发布等工作流技能"
+    icon: "workflow"
+
+---
+
+# 版本信息
+
+version: "1.0.0"
+plumb_link_version: ">=1.0.0"
+last_updated: "2026-06-17"

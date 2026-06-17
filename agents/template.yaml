@@ -1,0 +1,221 @@
+# Plumb-Link 技能接口模板
+
+本文件定义了大模型与技能交互的通用模板。
+
+---
+
+## 技能注册表结构
+
+```yaml
+# agents/skill_registry.yaml
+skills:
+  - name: build-linux-app
+    category: software
+    version: 1.0.0
+    description: "配置、编译 Linux 应用工程，支持 ARM64 交叉编译"
+    keywords:
+      - "编译"
+      - "build"
+      - "cmake"
+      - "交叉编译"
+      - "arm64"
+    agents:
+      - openai
+      - claude
+      - trae
+    shared_deps:
+      - tool_config
+    platforms:
+      - linux
+      - windows
+      - wsl
+    required_tools:
+      - cmake
+      - make
+      - gcc
+
+  - name: gpio-config
+    category: hardware
+    version: 1.0.0
+    description: "GPIO 引脚配置和管理"
+    keywords:
+      - "gpio"
+      - "引脚"
+      - "pin"
+    agents:
+      - openai
+      - claude
+      - trae
+    platforms:
+      - linux
+    required_tools:
+      - gpioset
+```
+
+---
+
+## 大模型提示词模板
+
+### 系统提示词
+
+```yaml
+system_prompt: |
+  你是一个嵌入式技能助手。当用户请求与硬件配置、软件开发、编译构建、
+  调试分析等相关的任务时，你应该：
+  
+  1. 首先理解用户的需求
+  2. 识别需要使用的技能
+  3. 按照技能的使用说明执行任务
+  4. 返回结构化的结果
+  
+  可用技能列表：
+  {skill_list}
+  
+  使用技能时，请参考对应技能的 SKILL.md 文件。
+```
+
+### 技能调用提示词
+
+```yaml
+skill_invocation: |
+  请使用 {skill_name} 技能完成任务。
+  
+  技能说明：
+  {skill_description}
+  
+  执行步骤：
+  {skill_steps}
+  
+  请按步骤执行，并在完成后返回结果。
+```
+
+### 结果格式提示词
+
+```yaml
+result_format: |
+  技能执行结果应包含以下字段：
+  
+  | 字段 | 类型 | 说明 |
+  |------|------|------|
+  | status | string | success/failure |
+  | summary | string | 简要总结 |
+  | details | object | 详细信息 |
+  | artifacts | array | 产物列表 |
+  | errors | array | 错误信息（如果有）|
+  
+  示例：
+  {
+    "status": "success",
+    "summary": "构建成功，产物位于 build/app",
+    "details": {
+      "build_time": "12.5s",
+      "compiler": "gcc 9.4.0"
+    },
+    "artifacts": [
+      {"path": "build/app", "size": 123456}
+    ]
+  }
+```
+
+### 错误处理提示词
+
+```yaml
+error_handling: |
+  当技能执行失败时，请提供：
+  
+  1. **failure_category**（失败分类）：
+     - `tool-missing`：缺少必要工具
+     - `project-config-error`：项目配置错误
+     - `compilation-error`：编译错误
+     - `permission-denied`：权限不足
+     - `artifact-missing`：产物未找到
+  
+  2. **suggestion**（建议）：
+     - 针对失败分类提供具体的解决建议
+  
+  3. **evidence**（证据）：
+     - 命令输出、日志信息等
+  
+  示例：
+  {
+    "status": "failure",
+    "failure_category": "tool-missing",
+    "summary": "缺少 gcc 编译器",
+    "suggestion": "请安装 gcc：apt install gcc",
+    "evidence": ["bash: gcc: command not found"]
+  }
+```
+
+---
+
+## 技能自动发现规则
+
+```yaml
+auto_discovery:
+  # 按文件特征自动匹配技能
+  file_patterns:
+    "CMakeLists.txt":
+      - build-linux-app
+    "Makefile":
+      - build-linux-app
+    "*.c" | "*.h":
+      - embedded-c-coding
+    "platformio.ini":
+      - build-platformio
+  
+  # 按指令关键词自动匹配
+  intent_keywords:
+    "编译|构建|build|compile":
+      - build-linux-app
+    "烧录|flash|download":
+      - flash-openocd
+    "调试|debug|gdb":
+      - debug-gdb-openocd
+    "GPIO|引脚|pin":
+      - gpio-config
+    "I2C|i2c":
+      - i2c-scan
+    "串口|serial|uart":
+      - serial-monitor
+```
+
+---
+
+## 技能交接规则
+
+```yaml
+handoff_rules:
+  # 构建完成后 → 调试
+  build-success:
+    next_skill: debug-linux-app
+    condition: "用户下一步需要调试"
+  
+  # 调试完成后 → 运行
+  debug-success:
+    next_skill: serial-monitor
+    condition: "需要查看运行日志"
+  
+  # 编译错误 → 代码检查
+  compilation-error:
+    next_skill: static-analysis
+    condition: "需要分析代码问题"
+  
+  # 工具缺失 → 环境配置
+  tool-missing:
+    next_skill: env-setup
+    condition: "需要配置开发环境"
+```
+
+---
+
+## 版本兼容性
+
+```yaml
+version: "1.0.0"
+compatibility:
+  plumb_link_version: ">=1.0.0"
+  agent_versions:
+    openai: ">=1.0.0"
+    claude: ">=1.0.0"
+    trae: ">=1.0.0"
+```
